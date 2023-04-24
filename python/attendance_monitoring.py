@@ -3,48 +3,24 @@ import csv
 import datetime
 import numpy as np
 
-
-
-#Total no. of students
-Total_stud=int(3)
-
-#Half no. of students
-if((Total_stud/2)%1!=0):
-    HalfStud=int(Total_stud/2)+1
-else:
-    HalfStud=int(Total_stud/2)
-
-
-
 #Code snippet to get the system date
 cd=datetime.datetime.now().date()
 month=cd.month
 day=cd.day
 ct=datetime.datetime.now().time()
-
-
-
-
-#--------------------------------------Facial Recognition Starts---------------------------------------#
-
-
-
 # Create Local Binary Patterns Histograms for face recognization
 recognizer = cv2.face.LBPHFaceRecognizer_create()
-
 # Load the trained mode
 recognizer.read('trainer.yml')
-
 fn_dir = 'dataset'
-
-
 # Load prebuilt model for Frontal Face
 cascadePath = "haarcascade_frontalface_default.xml"
 (im_width, im_height) = (112, 92)
-
-# Part 2: Use fisherRecognizer on camera streamy
-#Accessing the images stored in the database for the comparision
-#And appending the cooresponding the labels
+Total_stud=30
+if((Total_stud/2)%1!=0):
+    HalfStud=int(Total_stud/2)+1
+else:
+    HalfStud=int(Total_stud/2)
 (images, lables, names, id) = ([], [], {}, 0)
 for (subdirs, dirs, files) in os.walk(fn_dir):
     for subdir in dirs:
@@ -56,28 +32,18 @@ for (subdirs, dirs, files) in os.walk(fn_dir):
             images.append(cv2.imread(path, 0))
             lables.append(int(lable))
         id += 1
-
 #Initialising the haarcascade classifier so that when the camera starts, it knows the area of interest
 face_cascade = cv2.CascadeClassifier(cascadePath)
 webcam = cv2.VideoCapture(0)
-
-
-
-#Creating a count variable for each student 
-#to check how many times a student has been recognized correctly
-#Initialising all of them to 0
 x=0
 TotStud=[0]*Total_stud
 for x in range(Total_stud):
     TotStud[x]=0
-    
 x=0
 flag=[0]*Total_stud
 for x in range(Total_stud):
     flag[x]=0
-
 RecogCnt=0
-
 while (1):
 #Converting the current frame that will be used for recognition into grayscale, internally
 #By internally we mean that we will see non-grayscale images    
@@ -88,47 +54,23 @@ while (1):
         cv2.rectangle(im, (x, y), (x + w, y + h), (255, 0, 0), 2)
         face = gray[y:y + h, x:x + w]
         face_resize = cv2.resize(face, (im_width, im_height))
-        
-        
-        # Try to recognize the face
-        #Initializes the predictor for recognition of faces
         prediction = recognizer.predict(face_resize)
         cv2.rectangle(im, (x, y), (x + w, y + h), (0, 255, 0), 3)
-        
-        #This is like the confidence of the predictor
-        #If the predictor's output is greater than a threshold value
         if prediction[1] < 200:
             if (names[prediction[0]] == 'Nikhil'):
                 cv2.putText(im, '%s - %.0f' % ('Nikhil', prediction[1]), (x - 10, y - 10), cv2.FONT_HERSHEY_PLAIN, 1,
                             (0, 255, 0))
-                
                 TotStud[0] = TotStud[0] + 1
-                
-                
-
-
             elif (names[prediction[0]] == 'Obama'):
                 cv2.putText(im, '%s - %.0f' % ('Obama', prediction[1]), (x - 10, y - 10), cv2.FONT_HERSHEY_PLAIN, 1,
                             (0, 255, 0))
-                
-                TotStud[1] = TotStud[1] + 1
-                
-               
+                TotStud[1] = TotStud[1] + 1               
             elif (names[prediction[0]] == 'Shripad sir'):
                 cv2.putText(im, '%s - %.0f' % ('Shripad sir', prediction[1]), (x - 10, y - 10), cv2.FONT_HERSHEY_PLAIN, 1,
                             (0, 255, 0))
-                
                 TotStud[2] = TotStud[2] + 1
-                
-
         else:
             cv2.putText(im, 'not recognized', (x - 10, y - 10), cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 0))
-
-
-            
-    #This code snippet has been written in order to fullproof our code
-    #It make sures that atleast 50%of the students are recognized correctly
-    #And only then it does the further processing
     if (TotStud[0]>35 and flag[0]==0):
         RecogCnt=RecogCnt+1
         flag[0]=1
@@ -146,57 +88,24 @@ while (1):
     if (RecogCnt>=1):
         print("break state")
         break
-        
-
-
     cv2.imshow('OpenCV', im)
     key = cv2.waitKey(10)
- 
-    
 webcam.release()
 cv2.destroyAllWindows()
-
-
-#-----------------------------------------Facial Recognition Done------------------------------------#
-
-
-
-
-#-----------------------------------------Attendance Marking-----------------------------------------#
-
-#Code snippet to create attendance array(present or Not)
-#For the students
-#Default value is 0 i.e. Not present
 x=0
 attend=[0]*Total_stud
 for x in range(Total_stud):
     attend[x]=0
-
-
-
-    
-#If a student has been recognized atleast 8 times, then select "present" for him
 if(RecogCnt>=HalfStud):
-
-    for i in range(Total_stud):
-        
+    for i in range(Total_stud):      
         if(TotStud[i]>8):
             attend[i]=1
-        
 
-
-#Code snippet to select the subjects
 Subject=10
 while(Subject<1 or Subject>9):
         Subject=int(input("Enter the Subject you want to load the attendance for\nSelect 1 for CVML"
             "\nSelect 2 for SIOT\nSelect 3 for AMT\nSelect 4 for DSP\nSelect 5 for OOPS\nSelect 6 for WC"
                 "\nSelect 7 for DD\nSelect 8 for Robotics"))
-
-
-
-#Code Snippet to make an entry into the respective attendance sheet
-        
-
 def Mark_Attendance(Subject):
     
     AttRec=[day,month,ct,'',attend[0],attend[1],attend[2]]
@@ -428,16 +337,6 @@ def Defaulers_Dates():
                     else:
                         DefCreated=2
                 file.close()
-            
-
-
-     
-       
-            
-#--------------------------------------------------------------------------------------------------------------#
-
- 
-        
   
         if(DefCreated==1 or DefCreated==2):
             x=0
@@ -574,25 +473,8 @@ def Defaulers_Dates():
             wrt = csv.writer(file)
             wrt.writerow(DefCheRec)
             file.close()
-        
-                    
-#-------------------------------------------------------------------------------------------------------------#
-
-        
-
-#-------------------------------------------------------------------------------------------------------------#
-
-            
-
             
 def Explicit_Def_Updt():
-
-
- #-----------------------------------------------------------------------------------------------------------#       
-
-       
-
-
 #Code Snippet if no teacher is able to initiate the defaulters update, in the above given days       
     if((day>=4 and day<=26) and ((month>=7 and month<=12) or (month>=1 and month<=5))):
         Update_Def=0
@@ -741,23 +623,12 @@ def Explicit_Def_Updt():
                 if(EmptyFile==1):
                     print("No lectures happened in the month="+str(month-1)+"\nfor the subject="+str(Subject))
                     EmptyFile=0
-                    
-                    
-                    
         if(Update_Def==1):
             DefCheRec=[month-1]
             file = open("DefCheck/DefCheck.csv","a",newline='')
             wrt = csv.writer(file)
             wrt.writerow(DefCheRec)
             file.close()
-            
-
-                    
-                   
-
-#------------------------------------------------------------------------------------------------------------#
-
-
 #----------------------------Checking the date and updating Defaulters file---------------------------------#           
 if((day==30 and (month==4 or month==6 or month==9 or month==11 )) or 
    ((day==31) and (month==1 or month==3 or month==5 or month==7 or month==8 or month==10 or month==12 )) or 
@@ -767,8 +638,4 @@ if((day==30 and (month==4 or month==6 or month==9 or month==11 )) or
         
 elif((day>=4 and day<=26) and ((month>=7 and month<=12) or (month>=1 and month<=5))):
     Explicit_Def_Updt()
-    
-    
-    
-          
-                
+  
